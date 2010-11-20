@@ -16,11 +16,14 @@
     along with Erebot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-class   ErebotModule_PhpFilter
-extends ErebotModuleBase
+class   Erebot_Module_PhpFilter
+extends Erebot_Module_Base
 {
     static protected $_metadata = array(
-        'requires'  =>  array('TriggerRegistry', 'Helper'),
+        'requires'  =>  array(
+            'Erebot_Module_TriggerRegistry',
+            'Erebot_Module_Helper',
+        ),
     );
     protected $_trigger;
     protected $_cmdHandler;
@@ -29,8 +32,11 @@ extends ErebotModuleBase
     public function reload($flags)
     {
         if ($flags & self::RELOAD_HANDLERS) {
-            $registry   = $this->_connection->getModule('TriggerRegistry', ErebotConnection::MODULE_BY_NAME);
-            $matchAny  = ErebotUtils::getVStatic($registry, 'MATCH_ANY');
+            $registry   = $this->_connection->getModule(
+                'Erebot_Module_TriggerRegistry',
+                Erebot_Connection::MODULE_BY_NAME
+            );
+            $matchAny  = Erebot_Utils::getVStatic($registry, 'MATCH_ANY');
 
             if (!($flags & self::RELOAD_INIT)) {
                 $this->_connection->removeEventHandler($this->_cmdHandler);
@@ -46,31 +52,31 @@ extends ErebotModuleBase
                     'Could not register Filter trigger'));
             }
 
-            $filter2    = new ErebotTextFilter(
+            $filter2    = new Erebot_TextFilter(
                                 $this->_mainCfg,
-                                ErebotTextFilter::TYPE_WILDCARD,
+                                Erebot_TextFilter::TYPE_WILDCARD,
                                 $trigger.' & *', TRUE);
-            $this->_cmdHandler   = new ErebotEventHandler(
+            $this->_cmdHandler   = new Erebot_EventHandler(
                                         array($this, 'handleFilter'),
-                                        'iErebotEventMessageText',
+                                        'Erebot_Interface_Event_TextMessage',
                                         NULL, $filter2);
             $this->_connection->addEventHandler($this->_cmdHandler);
 
-            $filter1    = new ErebotTextFilter($this->_mainCfg);
-            $filter1->addPattern(ErebotTextFilter::TYPE_STATIC, $trigger, TRUE);
-            $filter1->addPattern(ErebotTextFilter::TYPE_WILDCARD, $trigger.' &', TRUE);
-            $this->_usageHandler  = new ErebotEventHandler(
+            $filter1    = new Erebot_TextFilter($this->_mainCfg);
+            $filter1->addPattern(Erebot_TextFilter::TYPE_STATIC, $trigger, TRUE);
+            $filter1->addPattern(Erebot_TextFilter::TYPE_WILDCARD, $trigger.' &', TRUE);
+            $this->_usageHandler  = new Erebot_EventHandler(
                                         array($this, 'handleUsage'),
-                                        'iErebotEventMessageText',
+                                        'Erebot_Interface_Event_TextMessage',
                                         NULL, $filter1);
             $this->_connection->addEventHandler($this->_usageHandler);
             $this->registerHelpMethod(array($this, 'getHelp'));
         }
     }
 
-    public function getHelp(iErebotEventMessageText &$event, $words)
+    public function getHelp(Erebot_Interface_Event_TextMessage &$event, $words)
     {
-        if ($event instanceof iErebotEventPrivate) {
+        if ($event instanceof Erebot_Interface_Event_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
@@ -89,7 +95,7 @@ extends ErebotModuleBase
 Provides the <b><var name="trigger"/></b> command which transforms the given
 input using some PHP filter.
 ');
-            $formatter = new ErebotStyling($msg, $translator);
+            $formatter = new Erebot_Styling($msg, $translator);
             $formatter->assign('trigger', $trigger);
             $this->sendMessage($target, $formatter->render());
             return TRUE;
@@ -105,7 +111,7 @@ Transforms the given &lt;<u>input</u>&gt; using the given &lt;<u>filter</u>&gt;.
 The following filters are available: <for from="filters" item="filter">
 <b><var name="filter"/></b></for>.
 ');
-            $formatter = new ErebotStyling($msg, $translator);
+            $formatter = new Erebot_Styling($msg, $translator);
             $formatter->assign('trigger', $trigger);
             $formatter->assign('filters', $this->getAllowedFilters());
             $this->sendMessage($target, $formatter->render());
@@ -149,9 +155,9 @@ The following filters are available: <for from="filters" item="filter">
         return $allowed;
     }
 
-    public function handleUsage(iErebotEventMessageText &$event)
+    public function handleUsage(Erebot_Interface_Event_TextMessage &$event)
     {
-        if ($event instanceof iErebotEventPrivate) {
+        if ($event instanceof Erebot_Interface_Event_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
@@ -159,22 +165,22 @@ The following filters are available: <for from="filters" item="filter">
             $target = $chan = $event->getChan();
         $translator = $this->getTranslator($chan);
         $cmd        = $this->_usageHandler->getFilters()->getPatterns(
-                          ErebotTextFilter::TYPE_STATIC);
+                          Erebot_TextFilter::TYPE_STATIC);
         $message    = $translator->gettext('Usage: <b><var name="cmd"/> '.
                 '&lt;filter&gt; &lt;text&gt;</b>. Available filters: '.
                 '<for from="filters" item="filter">'.
                 '<var name="filter"/></for>.');
 
-        $tpl = new ErebotStyling($message, $translator);
+        $tpl = new Erebot_Styling($message, $translator);
         $tpl->assign('cmd', '!'.substr($cmd[0], 1));
         $tpl->assign('filters', $this->getAllowedFilters());
         $this->sendMessage($target, $tpl->render());
         return $event->preventDefault(TRUE);
     }
 
-    public function handleFilter(iErebotEventMessageText &$event)
+    public function handleFilter(Erebot_Interface_Event_TextMessage &$event)
     {
-        if ($event instanceof iErebotEventPrivate) {
+        if ($event instanceof Erebot_Interface_Event_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
@@ -196,7 +202,7 @@ The following filters are available: <for from="filters" item="filter">
             $message = $translator->gettext('No such filter "<var name="filter"/>" '.
                                     'or filter blocked.');
 
-            $tpl = new ErebotStyling($message, $translator);
+            $tpl = new Erebot_Styling($message, $translator);
             $tpl->assign('filter', $filter);
             $this->sendMessage($target, $tpl->render());
             return $event->preventDefault(TRUE);
@@ -209,7 +215,7 @@ The following filters are available: <for from="filters" item="filter">
         $text = stream_get_contents($fp);
 
         $message = '<b><var name="filter"/></b>: <var name="result"/>';
-        $tpl = new ErebotStyling($message, $translator);
+        $tpl = new Erebot_Styling($message, $translator);
         $tpl->assign('filter', $filter);
         $tpl->assign('result', $text);
         $this->sendMessage($target, $tpl->render());
