@@ -28,9 +28,39 @@ extends Erebot_Module_Base
     protected $_trigger;
     protected $_cmdHandler;
     protected $_usageHandler;
+    protected $_allowedFilters;
+
+    const DEFAULT_ALLOWED_FILTERS = 'string.*,convert.*';
 
     public function reload($flags)
     {
+        if ($flags & self::RELOAD_MEMBERS) {
+            // By default, allow only filters from the
+            // "string." & "convert." families of filters.
+            $normalizer     = create_function('$a', 'return trim($a);');
+            $whitelist      = explode(',', $this->parseString('whitelist',
+                                self::DEFAULT_ALLOWED_FILTERS));
+            $whitelist      = array_map($normalizer, $whitelist);
+            $filters        = stream_get_filters();
+            $allowed        =
+            $allowedFilters = array();
+
+            foreach ($whitelist as $filter) {
+                $allowedFilters[$filter] = substr_count($filter, '.');
+            }
+
+            foreach ($filters as $filter) {
+                $nbDots = substr_count($filter, '.');
+                foreach ($allowedFilters as $allowedFilter => $allowedDots) {
+                    if (fnmatch($allowedFilter, $filter) &&
+                        $allowedDots == $nbDots) {
+                        $this->_allowedFilters[$filter] = $nbDots;
+                        break;
+                    }
+                }
+            }
+        }
+
         if ($flags & self::RELOAD_HANDLERS) {
             $registry   = $this->_connection->getModule(
                 'Erebot_Module_TriggerRegistry'
@@ -112,46 +142,10 @@ The following filters are available: <for from="filters" item="filter">
 ');
             $formatter = new Erebot_Styling($msg, $translator);
             $formatter->assign('trigger', $trigger);
-            $formatter->assign('filters', $this->getAllowedFilters());
+            $formatter->assign('filters', array_keys($this->_allowedFilters));
             $this->sendMessage($target, $formatter->render());
             return TRUE;
         }
-    }
-
-    public function getAllowedFilters()
-    {
-        // By default, allow only filters from the
-        // "string." & "convert." families of filters.
-        $default    = 'string.*,convert.*';
-        $normalizer = create_function('$a', 'return trim($a);');
-        $whitelist  = explode(',', $this->parseString('whitelist', $default));
-        $whitelist  = array_map($normalizer, $whitelist);
-        $filters    = stream_get_filters();
-        $allowed    = array();
-
-        $key        = array_search('convert.*', $filters);
-        if ($key !== FALSE) {
-            unset($filters[$key]);
-            $filters[] = 'convert.base64-encode';
-            $filters[] = 'convert.base64-decode';
-            $filters[] = 'convert.quoted-printable-encode';
-            $filters[] = 'convert.quoted-printable-decode';
-        }
-        unset($filters[$key]);
-
-        foreach ($filters as $filter) {
-            $allow = FALSE;
-            foreach ($whitelist as $allowedFilter) {
-                if (fnmatch($allowedFilter, $filter)) {
-                    $allow = TRUE;
-                    break;
-                }
-            }
-            if ($allow)
-                $allowed[] = $filter;
-        }
-
-        return $allowed;
     }
 
     public function handleUsage(Erebot_Interface_Event_TextMessage &$event)
@@ -172,7 +166,7 @@ The following filters are available: <for from="filters" item="filter">
 
         $tpl = new Erebot_Styling($message, $translator);
         $tpl->assign('cmd', '!'.substr($cmd[0], 1));
-        $tpl->assign('filters', $this->getAllowedFilters());
+        $tpl->assign('filters', array_keys($this->_allowedFilters));
         $this->sendMessage($target, $tpl->render());
         return $event->preventDefault(TRUE);
     }
@@ -190,8 +184,9 @@ The following filters are available: <for from="filters" item="filter">
         $translator = $this->getTranslator($chan);
 
         $allowed    = FALSE;
-        foreach ($this->getAllowedFilters() as $allowedFilter) {
-            if (fnmatch($allowedFilter, $filter)) {
+        $nbDots     = substr_count($filter, '.');
+        foreach ($this->_allowedFilters as $allowedFilter => $allowedDots) {
+            if (fnmatch($allowedFilter, $filter) && $allowedDots == $nbDots) {
                 $allowed = TRUE;
                 break;
             }
@@ -219,6 +214,11 @@ The following filters are available: <for from="filters" item="filter">
         $tpl->assign('result', $text);
         $this->sendMessage($target, $tpl->render());
         return $event->preventDefault(TRUE);
+    }
+
+    public function getAvailableFilters()
+    {
+        return $this->_allowedFilters;
     }
 }
 
