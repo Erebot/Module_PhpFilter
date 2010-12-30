@@ -81,23 +81,23 @@ extends Erebot_Module_Base
                     'Could not register Filter trigger'));
             }
 
-            $filter2    = new Erebot_TextFilter(
-                                $this->_mainCfg,
-                                Erebot_TextFilter::TYPE_WILDCARD,
-                                $trigger.' & *', TRUE);
             $this->_cmdHandler   = new Erebot_EventHandler(
                                         array($this, 'handleFilter'),
-                                        'Erebot_Interface_Event_TextMessage',
-                                        NULL, $filter2);
+                                        'Erebot_Interface_Event_TextMessage'
+                                    );
+            $this->_cmdHandler->addFilter(
+                new Erebot_TextFilter_Wildcard($trigger.' & *', TRUE)
+            );
             $this->_connection->addEventHandler($this->_cmdHandler);
 
-            $filter1    = new Erebot_TextFilter($this->_mainCfg);
-            $filter1->addPattern(Erebot_TextFilter::TYPE_STATIC, $trigger, TRUE);
-            $filter1->addPattern(Erebot_TextFilter::TYPE_WILDCARD, $trigger.' &', TRUE);
             $this->_usageHandler  = new Erebot_EventHandler(
                                         array($this, 'handleUsage'),
-                                        'Erebot_Interface_Event_TextMessage',
-                                        NULL, $filter1);
+                                        'Erebot_Interface_Event_TextMessage');
+            $this->_usageHandler->addFilter(
+                    new Erebot_TextFilter_Static($trigger, TRUE)
+                )->addFilter(
+                    new Erebot_TextFilter_Wildcard($trigger.' &', TRUE)
+                );
             $this->_connection->addEventHandler($this->_usageHandler);
             $this->registerHelpMethod(array($this, 'getHelp'));
         }
@@ -157,15 +157,14 @@ The following filters are available: <for from="filters" item="filter">
         else
             $target = $chan = $event->getChan();
         $translator = $this->getTranslator($chan);
-        $cmd        = $this->_usageHandler->getFilters()->getPatterns(
-                          Erebot_TextFilter::TYPE_STATIC);
+        $trigger    = $this->parseString('trigger', 'filter');
         $message    = $translator->gettext('Usage: <b><var name="cmd"/> '.
                 '&lt;filter&gt; &lt;text&gt;</b>. Available filters: '.
                 '<for from="filters" item="filter">'.
                 '<var name="filter"/></for>.');
 
         $tpl = new Erebot_Styling($message, $translator);
-        $tpl->assign('cmd', '!'.substr($cmd[0], 1));
+        $tpl->assign('cmd', $this->_mainConfig->getCommandsPrefix().$trigger);
         $tpl->assign('filters', array_keys($this->_allowedFilters));
         $this->sendMessage($target, $tpl->render());
         return $event->preventDefault(TRUE);
