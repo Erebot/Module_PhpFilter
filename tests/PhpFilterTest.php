@@ -34,7 +34,7 @@ extends ErebotModuleTestCase
             ->method('getModule')
             ->will($this->returnValue($this));
 
-        $this->_networkConfig
+        $this->_serverConfig
             ->expects($this->any())
             ->method('parseString')
             ->will($this->returnValue('string.*,convert.*'));
