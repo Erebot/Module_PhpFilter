@@ -32,7 +32,7 @@ extends Erebot_Module_Base
 
     const DEFAULT_ALLOWED_FILTERS = 'string.*,convert.*';
 
-    public function reload($flags)
+    public function _reload($flags)
     {
         if ($flags & self::RELOAD_MEMBERS) {
             // By default, allow only filters from the
@@ -103,6 +103,10 @@ extends Erebot_Module_Base
             $this->_connection->addEventHandler($this->_usageHandler);
             $this->registerHelpMethod(array($this, 'getHelp'));
         }
+    }
+
+    protected function _unload()
+    {
     }
 
     public function getHelp(Erebot_Interface_Event_TextMessage &$event, $words)
