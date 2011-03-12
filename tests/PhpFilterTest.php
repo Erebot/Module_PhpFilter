@@ -39,12 +39,12 @@ extends ErebotModuleTestCase
             ->method('parseString')
             ->will($this->returnValue('string.*,convert.*'));
 
-        $this->_module = new Erebot_Module_PhpFilter(
+        $this->_module = new Erebot_Module_PhpFilter('#test');
+        $this->_module->reload(
             $this->_connection,
-            '#test'
+            Erebot_Module_Base::RELOAD_MEMBERS |
+            Erebot_Module_Base::RELOAD_INIT
         );
-        $this->_module->reload( Erebot_Module_Base::RELOAD_MEMBERS |
-                                Erebot_Module_Base::RELOAD_INIT);
     }
 
     public function tearDown()
