@@ -84,7 +84,7 @@ extends Erebot_Module_Base
             $this->_cmdHandler   = new Erebot_EventHandler(
                 array($this, 'handleFilter'),
                 new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_TextMessage'),
+                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_Base_TextMessage'),
                     new Erebot_Event_Match_TextWildcard($trigger.' & *', TRUE)
                 )
             );
@@ -93,7 +93,7 @@ extends Erebot_Module_Base
             $this->_usageHandler  = new Erebot_EventHandler(
                 array($this, 'handleUsage'),
                 new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_TextMessage'),
+                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_Base_TextMessage'),
                     new Erebot_Event_Match_Any(
                         new Erebot_Event_Match_TextStatic($trigger, TRUE),
                         new Erebot_Event_Match_TextWildcard($trigger.' &', TRUE)
@@ -109,9 +109,9 @@ extends Erebot_Module_Base
     {
     }
 
-    public function getHelp(Erebot_Interface_Event_TextMessage &$event, $words)
+    public function getHelp(Erebot_Interface_Event_Base_TextMessage $event, $words)
     {
-        if ($event instanceof Erebot_Interface_Event_Private) {
+        if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
@@ -154,9 +154,9 @@ The following filters are available: <for from="filters" item="filter">
         }
     }
 
-    public function handleUsage(Erebot_Interface_Event_TextMessage &$event)
+    public function handleUsage(Erebot_Interface_Event_Base_TextMessage $event)
     {
-        if ($event instanceof Erebot_Interface_Event_Private) {
+        if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
@@ -176,9 +176,9 @@ The following filters are available: <for from="filters" item="filter">
         return $event->preventDefault(TRUE);
     }
 
-    public function handleFilter(Erebot_Interface_Event_TextMessage &$event)
+    public function handleFilter(Erebot_Interface_Event_Base_TextMessage $event)
     {
-        if ($event instanceof Erebot_Interface_Event_Private) {
+        if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
             $chan   = NULL;
         }
