@@ -76,18 +76,22 @@ extends Erebot_Module_Base
             }
 
             $this->_cmdHandler   = new Erebot_EventHandler(
-                array($this, 'handleFilter'),
+                new Erebot_Callable(array($this, 'handleFilter')),
                 new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_Base_TextMessage'),
+                    new Erebot_Event_Match_InstanceOf(
+                        'Erebot_Interface_Event_Base_TextMessage'
+                    ),
                     new Erebot_Event_Match_TextWildcard($trigger.' & *', TRUE)
                 )
             );
             $this->_connection->addEventHandler($this->_cmdHandler);
 
             $this->_usageHandler  = new Erebot_EventHandler(
-                array($this, 'handleUsage'),
+                new Erebot_Callable(array($this, 'handleUsage')),
                 new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf('Erebot_Interface_Event_Base_TextMessage'),
+                    new Erebot_Event_Match_InstanceOf(
+                        'Erebot_Interface_Event_Base_TextMessage'
+                    ),
                     new Erebot_Event_Match_Any(
                         new Erebot_Event_Match_TextStatic($trigger, TRUE),
                         new Erebot_Event_Match_TextWildcard($trigger.' &', TRUE)
