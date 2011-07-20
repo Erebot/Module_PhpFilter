@@ -152,7 +152,10 @@ The following filters are available: <for from="filters" item="filter">
         }
     }
 
-    public function handleUsage(Erebot_Interface_Event_Base_TextMessage $event)
+    public function handleUsage(
+        Erebot_Interface_EventHandler           $handler,
+        Erebot_Interface_Event_Base_TextMessage $event
+    )
     {
         if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
@@ -174,7 +177,10 @@ The following filters are available: <for from="filters" item="filter">
         return $event->preventDefault(TRUE);
     }
 
-    public function handleFilter(Erebot_Interface_Event_Base_TextMessage $event)
+    public function handleFilter(
+        Erebot_Interface_EventHandler           $handler,
+        Erebot_Interface_Event_Base_TextMessage $event
+    )
     {
         if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
