@@ -78,7 +78,7 @@ extends ErebotModuleTestCase
             'Tester',
             '!filter convert.base64-encode PHP'
         );
-        $this->_module->handleFilter($event);
+        $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
             "PRIVMSG #test :\002convert.base64-encode\002: UEhQ",
@@ -93,7 +93,7 @@ extends ErebotModuleTestCase
             'Tester',
             '!filter convert.base64-decode UEhQ'
         );
-        $this->_module->handleFilter($event);
+        $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
             "PRIVMSG #test :\002convert.base64-decode\002: PHP",
@@ -109,7 +109,7 @@ extends ErebotModuleTestCase
             'Tester',
             '!filter string.rot13 PHP'
         );
-        $this->_module->handleFilter($event);
+        $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
             "PRIVMSG #test :\002string.rot13\002: CUC",
@@ -125,7 +125,7 @@ extends ErebotModuleTestCase
             'Tester',
             '!filter surely.this.does.not.exist !!'
         );
-        $this->_module->handleFilter($event);
+        $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
             "PRIVMSG #test :No such filter \"surely.this.does.not.exist\" ".
