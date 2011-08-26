@@ -201,11 +201,12 @@ The following filters are available: <for from="filters" item="filter">
             }
         }
 
+        $stylingCls = $this->getFactory('!Styling');
         if (!$allowed) {
             $message = $translator->gettext('No such filter "<var name="filter"/>" '.
                                     'or filter blocked.');
 
-            $tpl = new Erebot_Styling($message, $translator);
+            $tpl = new $stylingCls($message, $translator);
             $tpl->assign('filter', $filter);
             $this->sendMessage($target, $tpl->render());
             return $event->preventDefault(TRUE);
@@ -218,7 +219,7 @@ The following filters are available: <for from="filters" item="filter">
         $text = stream_get_contents($fp);
 
         $message = '<b><var name="filter"/></b>: <var name="result"/>';
-        $tpl = new Erebot_Styling($message, $translator);
+        $tpl = new $stylingCls($message, $translator);
         $tpl->assign('filter', $filter);
         $tpl->assign('result', $text);
         $this->sendMessage($target, $tpl->render());

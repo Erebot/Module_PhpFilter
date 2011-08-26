@@ -16,11 +16,28 @@
     along with Erebot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once(
-    dirname(__FILE__) .
-    DIRECTORY_SEPARATOR . 'testenv' .
-    DIRECTORY_SEPARATOR . 'bootstrap.php'
-);
+abstract class  StylingStub
+implements      Erebot_Interface_Styling
+{
+    protected $_msg;
+    protected $_vars;
+
+    public function __construct($msg, $translator)
+    {
+        $this->_msg = $msg;
+    }
+
+    public function assign($var, $value)
+    {
+        $this->_vars['name="'.$var.'"'] = 'name="'.$value.'"';
+        $this->_vars["name='".$var."'"] = "name='".$value."'";
+    }
+
+    public function render()
+    {
+        return strtr($this->_msg, $this->_vars);
+    }
+}
 
 class   PhpFilterTest
 extends ErebotModuleTestCase
@@ -39,7 +56,13 @@ extends ErebotModuleTestCase
             ->method('parseString')
             ->will($this->returnValue('string.*,convert.*'));
 
+        $styling = $this->getMockForAbstractClass(
+            'StylingStub',
+            array(), '', FALSE, FALSE
+        );
+
         $this->_module = new Erebot_Module_PhpFilter('#test');
+        $this->_module->setFactory('!Styling', get_class($styling));
         $this->_module->reload(
             $this->_connection,
             Erebot_Module_Base::RELOAD_MEMBERS |
@@ -52,6 +75,44 @@ extends ErebotModuleTestCase
         $this->_module->unload();
         parent::tearDown();
     }
+
+    protected function _mockMessage($text)
+    {
+        $event = $this->getMock(
+            'Erebot_Interface_Event_ChanText',
+            array(), array(), '', FALSE, FALSE
+        );
+
+        $wrapper = $this->getMock(
+            'Erebot_Interface_TextWrapper',
+            array(), array(), '', FALSE, FALSE
+        );
+
+        $text = explode(" ", $text, 3);
+        $wrapper
+            ->expects($this->any())
+            ->method('getTokens')
+            ->will($this->onConsecutiveCalls($text[1], $text[2]));
+
+        $event
+            ->expects($this->any())
+            ->method('getConnection')
+            ->will($this->returnValue($this->_connection));
+        $event
+            ->expects($this->any())
+            ->method('getSource')
+            ->will($this->returnValue('Tester'));
+        $event
+            ->expects($this->any())
+            ->method('getChan')
+            ->will($this->returnValue('#test'));
+        $event
+            ->expects($this->any())
+            ->method('getText')
+            ->will($this->returnValue($wrapper));
+        return $event;
+    }
+
 
     public function testDefaultWhitelist()
     {
@@ -72,64 +133,48 @@ extends ErebotModuleTestCase
 
     public function testBase64Filter()
     {
-        $event = new Erebot_Event_ChanText(
-            $this->_connection,
-            '#test',
-            'Tester',
-            '!filter convert.base64-encode PHP'
-        );
+        $event = $this->_mockMessage('!filter convert.base64-encode PHP');
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            "PRIVMSG #test :\002convert.base64-encode\002: UEhQ",
+            'PRIVMSG #test :<b><var name="convert.base64-encode"/></b>: '.
+            '<var name="UEhQ"/>',
             $this->_outputBuffer[0]
         );
 
         // Clear the output buffer.
         $this->_outputBuffer = array();
-        $event = new Erebot_Event_ChanText(
-            $this->_connection,
-            '#test',
-            'Tester',
-            '!filter convert.base64-decode UEhQ'
-        );
+        $event = $this->_mockMessage('!filter convert.base64-decode UEhQ');
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            "PRIVMSG #test :\002convert.base64-decode\002: PHP",
+            'PRIVMSG #test :<b><var name="convert.base64-decode"/></b>: '.
+            '<var name="PHP"/>',
             $this->_outputBuffer[0]
         );
     }
 
     public function testRot13Filter()
     {
-        $event = new Erebot_Event_ChanText(
-            $this->_connection,
-            '#test',
-            'Tester',
-            '!filter string.rot13 PHP'
-        );
+        $event = $this->_mockMessage('!filter string.rot13 PHP');
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            "PRIVMSG #test :\002string.rot13\002: CUC",
+            'PRIVMSG #test :<b><var name="string.rot13"/></b>: '.
+            '<var name="CUC"/>',
             $this->_outputBuffer[0]
         );
     }
 
     public function testUnknownFilter()
     {
-        $event = new Erebot_Event_ChanText(
-            $this->_connection,
-            '#test',
-            'Tester',
-            '!filter surely.this.does.not.exist !!'
-        );
+        $event = $this->_mockMessage('!filter surely.this.does.not.exist !!');
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            "PRIVMSG #test :No such filter \"surely.this.does.not.exist\" ".
-            "or filter blocked.",
+            'PRIVMSG #test :No such filter '.
+            '"<var name="surely.this.does.not.exist"/>" '.
+            'or filter blocked.',
             $this->_outputBuffer[0]
         );
     }
