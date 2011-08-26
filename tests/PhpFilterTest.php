@@ -16,29 +16,6 @@
     along with Erebot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-abstract class  StylingStub
-implements      Erebot_Interface_Styling
-{
-    protected $_msg;
-    protected $_vars;
-
-    public function __construct($msg, $translator)
-    {
-        $this->_msg = $msg;
-    }
-
-    public function assign($var, $value)
-    {
-        $this->_vars['name="'.$var.'"'] = 'name="'.$value.'"';
-        $this->_vars["name='".$var."'"] = "name='".$value."'";
-    }
-
-    public function render()
-    {
-        return strtr($this->_msg, $this->_vars);
-    }
-}
-
 class   PhpFilterTest
 extends ErebotModuleTestCase
 {
