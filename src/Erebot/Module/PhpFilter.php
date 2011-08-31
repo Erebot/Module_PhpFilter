@@ -32,8 +32,14 @@ extends Erebot_Module_Base
             // By default, allow only filters from the
             // "string." & "convert." families of filters.
             $normalizer     = create_function('$a', 'return trim($a);');
-            $whitelist      = explode(',', $this->parseString('whitelist',
-                                self::DEFAULT_ALLOWED_FILTERS));
+            $whitelist      =
+                explode(
+                    ',',
+                    $this->parseString(
+                        'whitelist',
+                        self::DEFAULT_ALLOWED_FILTERS
+                    )
+                );
             $whitelist      = array_map($normalizer, $whitelist);
             $filters        = stream_get_filters();
             $allowed        =
@@ -71,8 +77,9 @@ extends Erebot_Module_Base
             $this->_trigger  = $registry->registerTriggers($trigger, $matchAny);
             if ($this->_trigger === NULL) {
                 $translator = $this->getTranslator(FALSE);
-                throw new Exception($translator->gettext(
-                    'Could not register Filter trigger'));
+                throw new Exception(
+                    $translator->gettext('Could not register Filter trigger')
+                );
             }
 
             $this->_cmdHandler   = new Erebot_EventHandler(
@@ -107,7 +114,10 @@ extends Erebot_Module_Base
     {
     }
 
-    public function getHelp(Erebot_Interface_Event_Base_TextMessage $event, $words)
+    public function getHelp(
+        Erebot_Interface_Event_Base_TextMessage $event,
+                                                $words
+    )
     {
         if ($event instanceof Erebot_Interface_Event_Base_Private) {
             $target = $event->getSource();
@@ -124,10 +134,10 @@ extends Erebot_Module_Base
         $nbArgs     =   count($words);
 
         if ($nbArgs == 1 && $words[0] == $moduleName) {
-            $msg = $translator->gettext('
-Provides the <b><var name="trigger"/></b> command which transforms the given
-input using some PHP filter.
-');
+            $msg = $translator->gettext(
+                'Provides the <b><var name="trigger"/></b> command which '.
+                'transforms the given input using some PHP filter.'
+            );
             $formatter = new Erebot_Styling($msg, $translator);
             $formatter->assign('trigger', $trigger);
             $this->sendMessage($target, $formatter->render());
@@ -138,12 +148,13 @@ input using some PHP filter.
             return FALSE;
 
         if ($words[1] == $trigger) {
-            $msg = $translator->gettext('
-<b>Usage:</b> !<var name="trigger"/> &lt;<u>filter</u>&gt; &lt;<u>input</u>&gt;.
-Transforms the given &lt;<u>input</u>&gt; using the given &lt;<u>filter</u>&gt;.
-The following filters are available: <for from="filters" item="filter">
-<b><var name="filter"/></b></for>.
-');
+            $msg = $translator->gettext(
+                '<b>Usage:</b> !<var name="trigger"/> &lt;<u>filter</u>&gt; '.
+                '&lt;<u>input</u>&gt;. Transforms the given '.
+                '&lt;<u>input</u>&gt; using the given &lt;<u>filter</u>&gt;. '.
+                'The following filters are available: <for from="filters" '.
+                'item="filter"><b><var name="filter"/></b></for>.'
+            );
             $formatter = new Erebot_Styling($msg, $translator);
             $formatter->assign('trigger', $trigger);
             $formatter->assign('filters', array_keys($this->_allowedFilters));
@@ -165,10 +176,11 @@ The following filters are available: <for from="filters" item="filter">
             $target = $chan = $event->getChan();
         $translator = $this->getTranslator($chan);
         $trigger    = $this->parseString('trigger', 'filter');
-        $message    = $translator->gettext('Usage: <b><var name="cmd"/> '.
-                '&lt;filter&gt; &lt;text&gt;</b>. Available filters: '.
-                '<for from="filters" item="filter">'.
-                '<var name="filter"/></for>.');
+        $message    = $translator->gettext(
+            'Usage: <b><var name="cmd"/> &lt;filter&gt; &lt;text&gt;</b>. '.
+            'Available filters: <for from="filters" item="filter"><var '.
+            'name="filter"/></for>.'
+        );
 
         $tpl = new Erebot_Styling($message, $translator);
         $tpl->assign('cmd', $this->_mainConfig->getCommandsPrefix().$trigger);
@@ -203,8 +215,9 @@ The following filters are available: <for from="filters" item="filter">
 
         $stylingCls = $this->getFactory('!Styling');
         if (!$allowed) {
-            $message = $translator->gettext('No such filter "<var name="filter"/>" '.
-                                    'or filter blocked.');
+            $message = $translator->gettext(
+                'No such filter "<var name="filter"/>" or filter blocked.'
+            );
 
             $tpl = new $stylingCls($message, $translator);
             $tpl->assign('filter', $filter);
