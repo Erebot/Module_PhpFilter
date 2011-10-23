@@ -162,7 +162,7 @@ extends Erebot_Module_Base
         }
     }
 
-    static protected _normalize($a)
+    static protected function _normalize($a)
     {
         return trim($a);
     }
