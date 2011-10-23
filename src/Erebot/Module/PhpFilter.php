@@ -31,7 +31,6 @@ extends Erebot_Module_Base
         if ($flags & self::RELOAD_MEMBERS) {
             // By default, allow only filters from the
             // "string." & "convert." families of filters.
-            $normalizer     = create_function('$a', 'return trim($a);');
             $whitelist      =
                 explode(
                     ',',
@@ -40,7 +39,7 @@ extends Erebot_Module_Base
                         self::DEFAULT_ALLOWED_FILTERS
                     )
                 );
-            $whitelist      = array_map($normalizer, $whitelist);
+            $whitelist      = array_map(array('self', '_normalize'), $whitelist);
             $filters        = stream_get_filters();
             $allowed        =
             $allowedFilters = array();
@@ -161,6 +160,11 @@ extends Erebot_Module_Base
             $this->sendMessage($target, $formatter->render());
             return TRUE;
         }
+    }
+
+    static protected _normalize($a)
+    {
+        return trim($a);
     }
 
     public function handleUsage(
