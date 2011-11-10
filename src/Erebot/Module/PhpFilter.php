@@ -186,8 +186,10 @@ extends Erebot_Module_Base
             'name="filter"/></for>.'
         );
 
-        $tpl = new Erebot_Styling($message, $translator);
-        $tpl->assign('cmd', $this->_mainConfig->getCommandsPrefix().$trigger);
+        $tpl        = new Erebot_Styling($message, $translator);
+        $serverCfg  = $this->_connection->getConfig(NULL);
+        $mainCfg    = $serverCfg->getMainCfg();
+        $tpl->assign('cmd', $mainCfg->getCommandsPrefix().$trigger);
         $tpl->assign('filters', array_keys($this->_allowedFilters));
         $this->sendMessage($target, $tpl->render());
         return $event->preventDefault(TRUE);
