@@ -26,7 +26,7 @@ msgid   "<b>Usage:</b> !<var name=\"trigger\"/> &lt;<u>filter</u>&gt; &lt;"
 msgstr  "<b>Usage :</b> !<var name=\"trigger\"/> &lt;<u>filtre</u>&gt; &lt;"
         "<u>entrée</u>&gt;. Transforme l'&lt;<u>entrée</u>&gt; en utilisant "
         "le &lt;<u>filtre</u>&gt; spécifié. Les filtres suivants sont "
-        "disponibles : <for from=\"filters\" item=\"filter\"> "
+        "disponibles : <for from=\"filters\" item=\"filter\">"
         "<b><var name=\"filter\"/></b></for>."
 #
 msgid   ""
