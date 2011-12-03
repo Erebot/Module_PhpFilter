@@ -75,9 +75,9 @@ extends Erebot_Module_Base
             $trigger        = $this->parseString('trigger', 'filter');
             $this->_trigger  = $registry->registerTriggers($trigger, $matchAny);
             if ($this->_trigger === NULL) {
-                $translator = $this->getTranslator(FALSE);
+                $fmt = $this->getFormatter(FALSE);
                 throw new Exception(
-                    $translator->gettext('Could not register Filter trigger')
+                    $fmt->_('Could not register Filter trigger')
                 );
             }
 
@@ -125,7 +125,7 @@ extends Erebot_Module_Base
         else
             $target = $chan = $event->getChan();
 
-        $translator = $this->getTranslator($chan);
+        $fmt        = $this->getFormatter($chan);
         $trigger    = $this->parseString('trigger', 'filter');
 
         $bot        = $this->_connection->getBot();
@@ -133,13 +133,12 @@ extends Erebot_Module_Base
         $nbArgs     = count($words);
 
         if ($nbArgs == 1 && $words[0] == $moduleName) {
-            $msg = $translator->gettext(
+            $msg = $fmt->_(
                 'Provides the <b><var name="trigger"/></b> command which '.
-                'transforms the given input using some PHP filter.'
+                'transforms the given input using some PHP filter.',
+                array('trigger' => $trigger)
             );
-            $formatter = new Erebot_Styling($msg, $translator);
-            $formatter->assign('trigger', $trigger);
-            $this->sendMessage($target, $formatter->render());
+            $this->sendMessage($target, $msg);
             return TRUE;
         }
 
@@ -147,17 +146,18 @@ extends Erebot_Module_Base
             return FALSE;
 
         if ($words[1] == $trigger) {
-            $msg = $translator->gettext(
+            $msg = $fmt->_(
                 '<b>Usage:</b> !<var name="trigger"/> &lt;<u>filter</u>&gt; '.
                 '&lt;<u>input</u>&gt;. Transforms the given '.
                 '&lt;<u>input</u>&gt; using the given &lt;<u>filter</u>&gt;. '.
                 'The following filters are available: <for from="filters" '.
-                'item="filter"><b><var name="filter"/></b></for>.'
+                'item="filter"><b><var name="filter"/></b></for>.',
+                array(
+                    'trigger' => $trigger,
+                    'filters' => array_keys($this->_allowedFilters),
+                )
             );
-            $formatter = new Erebot_Styling($msg, $translator);
-            $formatter->assign('trigger', $trigger);
-            $formatter->assign('filters', array_keys($this->_allowedFilters));
-            $this->sendMessage($target, $formatter->render());
+            $this->sendMessage($target, $msg);
             return TRUE;
         }
     }
@@ -178,20 +178,22 @@ extends Erebot_Module_Base
         }
         else
             $target = $chan = $event->getChan();
-        $translator = $this->getTranslator($chan);
-        $trigger    = $this->parseString('trigger', 'filter');
-        $message    = $translator->gettext(
-            'Usage: <b><var name="cmd"/> &lt;filter&gt; &lt;text&gt;</b>. '.
-            'Available filters: <for from="filters" item="filter"><var '.
-            'name="filter"/></for>.'
-        );
 
-        $tpl        = new Erebot_Styling($message, $translator);
+        $fmt        = $this->getFormatter($chan);
+        $trigger    = $this->parseString('trigger', 'filter');
+
         $serverCfg  = $this->_connection->getConfig(NULL);
         $mainCfg    = $serverCfg->getMainCfg();
-        $tpl->assign('cmd', $mainCfg->getCommandsPrefix().$trigger);
-        $tpl->assign('filters', array_keys($this->_allowedFilters));
-        $this->sendMessage($target, $tpl->render());
+        $msg        = $fmt->_(
+            'Usage: <b><var name="cmd"/> &lt;filter&gt; &lt;text&gt;</b>. '.
+            'Available filters: <for from="filters" item="filter"><var '.
+            'name="filter"/></for>.',
+            array(
+                'cmd' => $mainCfg->getCommandsPrefix().$trigger,
+                'filters' => array_keys($this->_allowedFilters)
+            )
+        );
+        $this->sendMessage($target, $msg);
         return $event->preventDefault(TRUE);
     }
 
@@ -208,7 +210,7 @@ extends Erebot_Module_Base
             $target = $chan = $event->getChan();
         $filter     = $event->getText()->getTokens(1, 1);
         $text       = $event->getText()->getTokens(2);
-        $translator = $this->getTranslator($chan);
+        $fmt        = $this->getFormatter($chan);
 
         $allowed    = FALSE;
         $nbDots     = substr_count($filter, '.');
@@ -219,15 +221,12 @@ extends Erebot_Module_Base
             }
         }
 
-        $stylingCls = $this->getFactory('!Styling');
         if (!$allowed) {
-            $message = $translator->gettext(
-                'No such filter "<var name="filter"/>" or filter blocked.'
+            $msg = $fmt->_(
+                'No such filter "<var name="filter"/>" or filter blocked.',
+                array('filter' => $filter)
             );
-
-            $tpl = new $stylingCls($message, $translator);
-            $tpl->assign('filter', $filter);
-            $this->sendMessage($target, $tpl->render());
+            $this->sendMessage($target, $msg);
             return $event->preventDefault(TRUE);
         }
 
@@ -237,11 +236,14 @@ extends Erebot_Module_Base
         rewind($fp);
         $text = stream_get_contents($fp);
 
-        $message = '<b><var name="filter"/></b>: <var name="result"/>';
-        $tpl = new $stylingCls($message, $translator);
-        $tpl->assign('filter', $filter);
-        $tpl->assign('result', $text);
-        $this->sendMessage($target, $tpl->render());
+        $msg = $fmt->_(
+            '<b><var name="filter"/></b>: <var name="result"/>'
+            array(
+                'filter' => $filter,
+                'result' => $text,
+            )
+        );
+        $this->sendMessage($target, $msg);
         return $event->preventDefault(TRUE);
     }
 
