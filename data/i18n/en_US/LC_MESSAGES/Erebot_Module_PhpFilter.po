@@ -2,7 +2,7 @@
 msgid   ""
 msgstr  "Project-Id-Version: Erebot_Module_PhpFilter 0.5.0\n"
         "Report-Msgid-Bugs-To: i18n@erebot.net\n"
-        "POT-Creation-Date: 2011-09-10 08:30+0200\n"
+        "POT-Creation-Date: 2011-12-04 19:27+0100\n"
         "PO-Revision-Date: 2011-04-16 01:08+0200\n"
         "Last-Translator: Automatically generated\n"
         "Language-Team: none\n"
@@ -11,6 +11,10 @@ msgstr  "Project-Id-Version: Erebot_Module_PhpFilter 0.5.0\n"
         "Content-Type: text/plain; charset=utf-8\n"
         "Content-Transfer-Encoding: 8bit\n"
         "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#
+# File: src/Erebot/Module/PhpFilter.php, line: 240
+msgid   "<b><var name=\"filter\"/></b>: <var name=\"result\"/>"
+msgstr  "<b><var name=\"filter\"/></b>: <var name=\"result\"/>"
 #
 # File: src/Erebot/Module/PhpFilter.php, line: 152
 msgid   "<b>Usage:</b> !<var name=\"trigger\"/> &lt;<u>filter</u>&gt; &lt;"
@@ -47,6 +51,10 @@ msgstr  "Usage: <b><var name=\"cmd\"/> &lt;filter&gt; &lt;text&gt;</b>. "
 #
 #
 #
+#
+#
+#
+#
 #~ msgid        "\n"
 #~      "<b>Usage:</b> !<var name=\"trigger\"/> &lt;<u>filter</u>&gt; &lt;"
 #~      "<u>input</u>&gt;.\n"
@@ -63,6 +71,10 @@ msgstr  "Usage: <b><var name=\"cmd\"/> &lt;filter&gt; &lt;text&gt;</b>. "
 #~      "The following filters are available: <for from=\"filters\" item="
 #~      "\"filter\">\n"
 #~      "<b><var name=\"filter\"/></b></for>.\n"
+#
+#
+#
+#
 #
 #
 #
