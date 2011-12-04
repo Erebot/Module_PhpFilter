@@ -17,10 +17,11 @@
 */
 
 class   PhpFilterTest
-extends ErebotModuleTestCase
+extends Erebot_Testenv_Module_TestCase
 {
     public function setUp()
     {
+        $this->_module = new Erebot_Module_PhpFilter('#test');
         parent::setUp();
 
         $this->_connection
@@ -33,12 +34,6 @@ extends ErebotModuleTestCase
             ->method('parseString')
             ->will($this->returnValue('string.*,convert.*'));
 
-        $this->_module = new Erebot_Module_PhpFilter('#test');
-        $styling = $this->getMockForAbstractClass(
-            'StylingStub',
-            array(), '', FALSE, FALSE
-        );
-        $this->_module->setFactory('!Styling', get_class($styling));
         $this->_module->reload(
             $this->_connection,
             Erebot_Module_Base::RELOAD_MEMBERS |
@@ -113,8 +108,8 @@ extends ErebotModuleTestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var name="convert.base64-encode"/></b>: '.
-            '<var name="UEhQ"/>',
+            'PRIVMSG #test :<b><var value="convert.base64-encode"/></b>: '.
+            '<var value="UEhQ"/>',
             $this->_outputBuffer[0]
         );
 
@@ -124,8 +119,8 @@ extends ErebotModuleTestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var name="convert.base64-decode"/></b>: '.
-            '<var name="PHP"/>',
+            'PRIVMSG #test :<b><var value="convert.base64-decode"/></b>: '.
+            '<var value="PHP"/>',
             $this->_outputBuffer[0]
         );
     }
@@ -136,8 +131,8 @@ extends ErebotModuleTestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var name="string.rot13"/></b>: '.
-            '<var name="CUC"/>',
+            'PRIVMSG #test :<b><var value="string.rot13"/></b>: '.
+            '<var value="CUC"/>',
             $this->_outputBuffer[0]
         );
     }
@@ -149,7 +144,7 @@ extends ErebotModuleTestCase
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
             'PRIVMSG #test :No such filter '.
-            '"<var name="surely.this.does.not.exist"/>" '.
+            '"<var value="surely.this.does.not.exist"/>" '.
             'or filter blocked.',
             $this->_outputBuffer[0]
         );
