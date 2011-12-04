@@ -237,7 +237,7 @@ extends Erebot_Module_Base
         $text = stream_get_contents($fp);
 
         $msg = $fmt->_(
-            '<b><var name="filter"/></b>: <var name="result"/>'
+            '<b><var name="filter"/></b>: <var name="result"/>',
             array(
                 'filter' => $filter,
                 'result' => $text,
