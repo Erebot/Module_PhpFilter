@@ -16,49 +16,47 @@
     along with Erebot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ *  \brief
+ *      A module that processes its input using PHP stream filters
+ *      (http://php.net/stream.filters.php).
+ */
 class   Erebot_Module_PhpFilter
 extends Erebot_Module_Base
 {
+    /// Token for the trigger associated with this module.
     protected $_trigger;
+
+    /// Handler for filter requests.
     protected $_cmdHandler;
+
+    /// Handler for help requests.
     protected $_usageHandler;
+
+    /// List of allowed filters, overrides DEFAULT_ALLOWED_FILTERS.
     protected $_allowedFilters;
 
+    /// Default list of filters, considered safe.
     const DEFAULT_ALLOWED_FILTERS = 'string.*,convert.*';
 
+    /**
+     * This method is called whenever the module is (re)loaded.
+     *
+     * \param int $flags
+     *      A bitwise OR of the Erebot_Module_Base::RELOAD_*
+     *      constants. Your method should take proper actions
+     *      depending on the value of those flags.
+     *
+     * \note
+     *      See the documentation on individual RELOAD_*
+     *      constants for a list of possible values.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function _reload($flags)
     {
-        if ($flags & self::RELOAD_MEMBERS) {
-            // By default, allow only filters from the
-            // "string." & "convert." families of filters.
-            $whitelist      =
-                explode(
-                    ',',
-                    $this->parseString(
-                        'whitelist',
-                        self::DEFAULT_ALLOWED_FILTERS
-                    )
-                );
-            $whitelist      = array_map(array('self', '_normalize'), $whitelist);
-            $filters        = stream_get_filters();
-            $allowed        =
-            $allowedFilters = array();
-
-            foreach ($whitelist as $filter) {
-                $allowedFilters[$filter] = substr_count($filter, '.');
-            }
-
-            foreach ($filters as $filter) {
-                $nbDots = substr_count($filter, '.');
-                foreach ($allowedFilters as $allowedFilter => $allowedDots) {
-                    if (fnmatch($allowedFilter, $filter) &&
-                        $allowedDots == $nbDots) {
-                        $this->_allowedFilters[$filter] = $nbDots;
-                        break;
-                    }
-                }
-            }
-        }
+        if ($flags & self::RELOAD_MEMBERS)
+            return $this->_reloadMembers();
 
         if ($flags & self::RELOAD_HANDLERS) {
             $registry   = $this->_connection->getModule(
@@ -109,10 +107,60 @@ extends Erebot_Module_Base
         }
     }
 
+    /// \copydoc Erebot_Module_Base::_unload()
     protected function _unload()
     {
     }
 
+    /**
+     * Reloads instance members.
+     * This method is called by _reload().
+     * Don't try to call it yourself unless
+     * you know what your're doing!
+     */
+    protected function _reloadMembers()
+    {
+        // By default, allow only filters from the
+        // "string." & "convert." families of filters.
+        $whitelist  =
+            explode(
+                ',',
+                $this->parseString(
+                    'whitelist',
+                    self::DEFAULT_ALLOWED_FILTERS
+                )
+            );
+        $whitelist  = array_map(array('self', '_normalize'), $whitelist);
+        $filters    = stream_get_filters();
+
+        $allowedFilters = array();
+        foreach ($whitelist as $filter)
+            $allowedFilters[$filter] = substr_count($filter, '.');
+
+        foreach ($filters as $filter) {
+            $nbDots = substr_count($filter, '.');
+            foreach ($allowedFilters as $allowedFilter => $allowedDots) {
+                if (fnmatch($allowedFilter, $filter) &&
+                    $allowedDots == $nbDots) {
+                    $this->_allowedFilters[$filter] = $nbDots;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Provides help about this module.
+     *
+     * \param Erebot_Interface_Event_Base_TextMessage $event
+     *      Some help request.
+     *
+     * \param array $words
+     *      Parameters passed with the request. This is the same
+     *      as this module's name when help is requested on the
+     *      module itself (in opposition with help on a specific
+     *      command provided by the module).
+     */
     public function getHelp(
         Erebot_Interface_Event_Base_TextMessage $event,
                                                 $words
@@ -127,8 +175,6 @@ extends Erebot_Module_Base
 
         $fmt        = $this->getFormatter($chan);
         $trigger    = $this->parseString('trigger', 'filter');
-
-        $bot        = $this->_connection->getBot();
         $moduleName = strtolower(get_class());
         $nbArgs     = count($words);
 
@@ -162,11 +208,31 @@ extends Erebot_Module_Base
         }
     }
 
+    /**
+     * Normalizes a filter name.
+     *
+     * \param string $a
+     *      A filter name to normalize.
+     *
+     * \retval string
+     *      Normalized name for the filter.
+     */
     static protected function _normalize($a)
     {
         return trim($a);
     }
 
+    /**
+     * Handles a request for usage help.
+     *
+     * \param Erebot_Interface_EventHandler $handler
+     *      Handler that triggered this event.
+     *
+     * \param Erebot_Interface_Event_Base_TextMessage $event
+     *      Help request.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function handleUsage(
         Erebot_Interface_EventHandler           $handler,
         Erebot_Interface_Event_Base_TextMessage $event
@@ -197,6 +263,18 @@ extends Erebot_Module_Base
         return $event->preventDefault(TRUE);
     }
 
+    /**
+     * Handles a request to process some text using
+     * a PHP stream filter.
+     *
+     * \param Erebot_Interface_EventHandler $handler
+     *      Handler that triggered this event.
+     *
+     * \param Erebot_Interface_Event_Base_TextMessage $event
+     *      Some input to process.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
     public function handleFilter(
         Erebot_Interface_EventHandler           $handler,
         Erebot_Interface_Event_Base_TextMessage $event
@@ -247,6 +325,19 @@ extends Erebot_Module_Base
         return $event->preventDefault(TRUE);
     }
 
+    /**
+     * Returns a list of supported filters.
+     *
+     * \retval array
+     *      A list of filter names that can be used
+     *      with this module.
+     *
+     * \note
+     *      Not all filters supported by PHP may
+     *      necessarily be supported by this module.
+     *      Especially, filters that return binary
+     *      data are not suitable for this module.
+     */
     public function getAvailableFilters()
     {
         return $this->_allowedFilters;
