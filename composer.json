@@ -1,5 +1,5 @@
 {
-    "name": "erebot/erebot-module-phpfilter",
+    "name": "erebot/phpfilter-module",
     "description": "Erebot module to invoke PHP filters from IRC",
     "keywords": ["Erebot", "IRC", "bot", "module"],
     "homepage": "https://github.com/Erebot/Erebot_Module_PhpFilter",
