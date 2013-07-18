@@ -15,12 +15,12 @@ Contents:
     Configuration
     Usage
 
-Current status on http://travis-ci.org/:
 
-..  image:: https://secure.travis-ci.org/Erebot/Erebot_Module_PhpFilter.png
-    :alt: unknown
-    :target: http://travis-ci.org/#!/Erebot/Erebot_Module_PhpFilter/
+Current status on http://travis-ci.org/: |travis|
 
+..  |travis| image:: https://secure.travis-ci.org/Erebot/Erebot_Module_PhpFilter.png
+    :alt: UNKNOWN
+    :target: https://travis-ci.org/Erebot/Erebot_Module_PhpFilter/
 
 ..  _`Erebot`:
     https://www.erebot.net/
