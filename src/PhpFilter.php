@@ -16,25 +16,26 @@
     along with Erebot.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+namespace Erebot\Module;
+
 /**
  *  \brief
  *      A module that processes its input using PHP stream filters
  *      (http://php.net/stream.filters.php).
  */
-class   Erebot_Module_PhpFilter
-extends Erebot_Module_Base
+class PhpFilter extends \Erebot\Module\Base implements \Erebot\Interfaces\HelpEnabled
 {
     /// Token for the trigger associated with this module.
-    protected $_trigger;
+    protected $trigger;
 
     /// Handler for filter requests.
-    protected $_cmdHandler;
+    protected $cmdHandler;
 
     /// Handler for help requests.
-    protected $_usageHandler;
+    protected $usageHandler;
 
     /// List of allowed filters, overrides DEFAULT_ALLOWED_FILTERS.
-    protected $_allowedFilters;
+    protected $allowedFilters;
 
     /// Default list of filters, considered safe.
     const DEFAULT_ALLOWED_FILTERS = 'string.*,convert.*';
@@ -43,7 +44,7 @@ extends Erebot_Module_Base
      * This method is called whenever the module is (re)loaded.
      *
      * \param int $flags
-     *      A bitwise OR of the Erebot_Module_Base::RELOAD_*
+     *      A bitwise OR of the Erebot::Module::Base::RELOAD_*
      *      constants. Your method should take proper actions
      *      depending on the value of those flags.
      *
@@ -53,59 +54,56 @@ extends Erebot_Module_Base
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function _reload($flags)
+    public function reload($flags)
     {
-        if ($flags & self::RELOAD_MEMBERS)
-            return $this->_reloadMembers();
+        if ($flags & self::RELOAD_MEMBERS) {
+            return $this->reloadMembers();
+        }
 
         if ($flags & self::RELOAD_HANDLERS) {
-            $registry   = $this->_connection->getModule(
-                'Erebot_Module_TriggerRegistry'
+            $registry   = $this->connection->getModule(
+                '\\Erebot\\Module\\TriggerRegistry'
             );
-            $matchAny  = Erebot_Utils::getVStatic($registry, 'MATCH_ANY');
 
             if (!($flags & self::RELOAD_INIT)) {
-                $this->_connection->removeEventHandler($this->_cmdHandler);
-                $this->_connection->removeEventHandler($this->_usageHandler);
-                $registry->freeTriggers($this->_trigger, $matchAny);
+                $this->connection->removeEventHandler($this->cmdHandler);
+                $this->connection->removeEventHandler($this->usageHandler);
+                $registry->freeTriggers($this->trigger, $registry::MATCH_ANY);
             }
 
             $trigger        = $this->parseString('trigger', 'filter');
-            $this->_trigger  = $registry->registerTriggers($trigger, $matchAny);
-            if ($this->_trigger === NULL) {
-                $fmt = $this->getFormatter(FALSE);
-                throw new Exception(
+            $this->trigger  = $registry->registerTriggers($trigger, $registry::MATCH_ANY);
+            if ($this->trigger === null) {
+                $fmt = $this->getFormatter(false);
+                throw new \Exception(
                     $fmt->_('Could not register Filter trigger')
                 );
             }
 
-            $this->_cmdHandler   = new Erebot_EventHandler(
-                new Erebot_Callable(array($this, 'handleFilter')),
-                new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf(
-                        'Erebot_Interface_Event_Base_TextMessage'
+            $this->cmdHandler   = new \Erebot\EventHandler(
+                \Erebot\CallableWrapper::wrap(array($this, 'handleFilter')),
+                new \Erebot\Event\Match\All(
+                    new \Erebot\Event\Match\Type(
+                        '\\Erebot\\Interfaces\\Event\\Base\\TextMessage'
                     ),
-                    new Erebot_Event_Match_TextWildcard($trigger.' & *', TRUE)
+                    new \Erebot\Event\Match\TextWildcard($trigger.' & *', true)
                 )
             );
-            $this->_connection->addEventHandler($this->_cmdHandler);
+            $this->connection->addEventHandler($this->cmdHandler);
 
-            $this->_usageHandler  = new Erebot_EventHandler(
-                new Erebot_Callable(array($this, 'handleUsage')),
-                new Erebot_Event_Match_All(
-                    new Erebot_Event_Match_InstanceOf(
-                        'Erebot_Interface_Event_Base_TextMessage'
+            $this->usageHandler  = new \Erebot\EventHandler(
+                \Erebot\CallableWrapper::wrap(array($this, 'handleUsage')),
+                new \Erebot\Event\Match\All(
+                    new \Erebot\Event\Match\Type(
+                        '\\Erebot\\Interfaces\\Event\\Base\\TextMessage'
                     ),
-                    new Erebot_Event_Match_Any(
-                        new Erebot_Event_Match_TextStatic($trigger, TRUE),
-                        new Erebot_Event_Match_TextWildcard($trigger.' &', TRUE)
+                    new \Erebot\Event\Match\Any(
+                        new \Erebot\Event\Match\TextStatic($trigger, true),
+                        new \Erebot\Event\Match\TextWildcard($trigger.' &', true)
                     )
                 )
             );
-            $this->_connection->addEventHandler($this->_usageHandler);
-
-            $cls = $this->getFactory('!Callable');
-            $this->registerHelpMethod(new $cls(array($this, 'getHelp')));
+            $this->connection->addEventHandler($this->usageHandler);
         }
     }
 
@@ -115,7 +113,7 @@ extends Erebot_Module_Base
      * Don't try to call it yourself unless
      * you know what your're doing!
      */
-    protected function _reloadMembers()
+    protected function reloadMembers()
     {
         // By default, allow only filters from the
         // "string." & "convert." families of filters.
@@ -127,19 +125,25 @@ extends Erebot_Module_Base
                     self::DEFAULT_ALLOWED_FILTERS
                 )
             );
-        $whitelist  = array_map(array('self', '_normalize'), $whitelist);
+        $whitelist  = array_map(
+            function ($name) {
+                return trim($name);
+            },
+            $whitelist
+        );
         $filters    = stream_get_filters();
 
         $allowedFilters = array();
-        foreach ($whitelist as $filter)
+        foreach ($whitelist as $filter) {
             $allowedFilters[$filter] = substr_count($filter, '.');
+        }
 
         foreach ($filters as $filter) {
             $nbDots = substr_count($filter, '.');
             foreach ($allowedFilters as $allowedFilter => $allowedDots) {
                 if (fnmatch($allowedFilter, $filter) &&
                     $allowedDots == $nbDots) {
-                    $this->_allowedFilters[$filter] = $nbDots;
+                    $this->allowedFilters[$filter] = $nbDots;
                     break;
                 }
             }
@@ -149,44 +153,42 @@ extends Erebot_Module_Base
     /**
      * Provides help about this module.
      *
-     * \param Erebot_Interface_Event_Base_TextMessage $event
+     * \param Erebot::Interfaces::Event::Base::TextMessage $event
      *      Some help request.
      *
-     * \param Erebot_Interface_TextWrapper $words
+     * \param Erebot::Interfaces::TextWrapper $words
      *      Parameters passed with the request. This is the same
      *      as this module's name when help is requested on the
      *      module itself (in opposition with help on a specific
      *      command provided by the module).
      */
     public function getHelp(
-        Erebot_Interface_Event_Base_TextMessage $event,
-        Erebot_Interface_TextWrapper            $words
-    )
-    {
-        if ($event instanceof Erebot_Interface_Event_Base_Private) {
+        \Erebot\Interfaces\Event\Base\TextMessage   $event,
+        \Erebot\Interfaces\TextWrapper              $words
+    ) {
+        if ($event instanceof \Erebot\Interfaces\Event\Base\PrivateMessage) {
             $target = $event->getSource();
-            $chan   = NULL;
-        }
-        else
+            $chan   = null;
+        } else {
             $target = $chan = $event->getChan();
+        }
 
         $fmt        = $this->getFormatter($chan);
         $trigger    = $this->parseString('trigger', 'filter');
-        $moduleName = strtolower(get_class());
         $nbArgs     = count($words);
-
-        if ($nbArgs == 1 && $words[0] == $moduleName) {
+        if ($nbArgs == 1 && $words[0] === get_called_class()) {
             $msg = $fmt->_(
                 'Provides the <b><var name="trigger"/></b> command which '.
                 'transforms the given input using some PHP filter.',
                 array('trigger' => $trigger)
             );
             $this->sendMessage($target, $msg);
-            return TRUE;
+            return true;
         }
 
-        if ($nbArgs < 2)
-            return FALSE;
+        if ($nbArgs < 2) {
+            return falsefalse;
+        }
 
         if ($words[1] == $trigger) {
             $msg = $fmt->_(
@@ -197,55 +199,40 @@ extends Erebot_Module_Base
                 'item="filter"><b><var name="filter"/></b></for>.',
                 array(
                     'trigger' => $trigger,
-                    'filters' => array_keys($this->_allowedFilters),
+                    'filters' => array_keys($this->allowedFilters),
                 )
             );
             $this->sendMessage($target, $msg);
-            return TRUE;
+            return true;
         }
-    }
-
-    /**
-     * Normalizes a filter name.
-     *
-     * \param string $a
-     *      A filter name to normalize.
-     *
-     * \retval string
-     *      Normalized name for the filter.
-     */
-    static protected function _normalize($a)
-    {
-        return trim($a);
     }
 
     /**
      * Handles a request for usage help.
      *
-     * \param Erebot_Interface_EventHandler $handler
+     * \param Erebot::Interfaces:EventHandler $handler
      *      Handler that triggered this event.
      *
-     * \param Erebot_Interface_Event_Base_TextMessage $event
+     * \param Erebot::Interfaces::Event::Base::TextMessage $event
      *      Help request.
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function handleUsage(
-        Erebot_Interface_EventHandler           $handler,
-        Erebot_Interface_Event_Base_TextMessage $event
-    )
-    {
-        if ($event instanceof Erebot_Interface_Event_Base_Private) {
+        \Erebot\Interfaces\EventHandler           $handler,
+        \Erebot\Interfaces\Event\Base\TextMessage $event
+    ) {
+        if ($event instanceof \Erebot\Interfaces\Event\Base\PrivateMessage) {
             $target = $event->getSource();
-            $chan   = NULL;
-        }
-        else
+            $chan   = null;
+        } else {
             $target = $chan = $event->getChan();
+        }
 
         $fmt        = $this->getFormatter($chan);
         $trigger    = $this->parseString('trigger', 'filter');
 
-        $serverCfg  = $this->_connection->getConfig(NULL);
+        $serverCfg  = $this->connection->getConfig(null);
         $mainCfg    = $serverCfg->getMainCfg();
         $msg        = $fmt->_(
             'Usage: <b><var name="cmd"/> &lt;filter&gt; &lt;text&gt;</b>. '.
@@ -253,45 +240,45 @@ extends Erebot_Module_Base
             'name="filter"/></for>.',
             array(
                 'cmd' => $mainCfg->getCommandsPrefix().$trigger,
-                'filters' => array_keys($this->_allowedFilters)
+                'filters' => array_keys($this->allowedFilters)
             )
         );
         $this->sendMessage($target, $msg);
-        return $event->preventDefault(TRUE);
+        return $event->preventDefault(true);
     }
 
     /**
      * Handles a request to process some text using
      * a PHP stream filter.
      *
-     * \param Erebot_Interface_EventHandler $handler
+     * \param Erebot::Interfaces::EventHandler $handler
      *      Handler that triggered this event.
      *
-     * \param Erebot_Interface_Event_Base_TextMessage $event
+     * \param Erebot::Interfaces::Event::Base::TextMessage $event
      *      Some input to process.
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function handleFilter(
-        Erebot_Interface_EventHandler           $handler,
-        Erebot_Interface_Event_Base_TextMessage $event
-    )
-    {
-        if ($event instanceof Erebot_Interface_Event_Base_Private) {
+        \Erebot\Interfaces\EventHandler           $handler,
+        \Erebot\Interfaces\Event\Base\TextMessage $event
+    ) {
+        if ($event instanceof \Erebot\Interfaces\Event\Base\PrivateMessage) {
             $target = $event->getSource();
-            $chan   = NULL;
-        }
-        else
+            $chan   = null;
+        } else {
             $target = $chan = $event->getChan();
+        }
+
         $filter     = $event->getText()->getTokens(1, 1);
         $text       = $event->getText()->getTokens(2);
         $fmt        = $this->getFormatter($chan);
 
-        $allowed    = FALSE;
+        $allowed    = false;
         $nbDots     = substr_count($filter, '.');
-        foreach ($this->_allowedFilters as $allowedFilter => $allowedDots) {
+        foreach ($this->allowedFilters as $allowedFilter => $allowedDots) {
             if (fnmatch($allowedFilter, $filter) && $allowedDots == $nbDots) {
-                $allowed = TRUE;
+                $allowed = true;
                 break;
             }
         }
@@ -302,7 +289,7 @@ extends Erebot_Module_Base
                 array('filter' => $filter)
             );
             $this->sendMessage($target, $msg);
-            return $event->preventDefault(TRUE);
+            return $event->preventDefault(true);
         }
 
         $fp = fopen('php://memory', 'w+');
@@ -319,7 +306,7 @@ extends Erebot_Module_Base
             )
         );
         $this->sendMessage($target, $msg);
-        return $event->preventDefault(TRUE);
+        return $event->preventDefault(true);
     }
 
     /**
@@ -337,7 +324,6 @@ extends Erebot_Module_Base
      */
     public function getAvailableFilters()
     {
-        return $this->_allowedFilters;
+        return $this->allowedFilters;
     }
 }
-

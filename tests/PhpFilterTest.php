@@ -21,7 +21,7 @@ extends Erebot_Testenv_Module_TestCase
 {
     public function setUp()
     {
-        $this->_module = new Erebot_Module_PhpFilter('#test');
+        $this->_module = new \Erebot\Module\PhpFilter('#test');
         parent::setUp();
 
         $this->_connection
@@ -34,28 +34,28 @@ extends Erebot_Testenv_Module_TestCase
             ->method('parseString')
             ->will($this->returnValue('string.*,convert.*'));
 
-        $this->_module->reload(
+        $this->_module->reloadModule(
             $this->_connection,
-            Erebot_Module_Base::RELOAD_MEMBERS |
-            Erebot_Module_Base::RELOAD_INIT
+            \Erebot\Module\Base::RELOAD_MEMBERS |
+            \Erebot\Module\Base::RELOAD_INIT
         );
     }
 
     public function tearDown()
     {
-        $this->_module->unload();
+        $this->_module->unloadModule();
         parent::tearDown();
     }
 
     protected function _mockMessage($text)
     {
         $event = $this->getMock(
-            'Erebot_Interface_Event_ChanText',
+            '\\Erebot\\Interfaces\\Event\\ChanText',
             array(), array(), '', FALSE, FALSE
         );
 
         $wrapper = $this->getMock(
-            'Erebot_Interface_TextWrapper',
+            '\\Erebot\\Interfaces\\TextWrapper',
             array(), array(), '', FALSE, FALSE
         );
 
@@ -108,8 +108,7 @@ extends Erebot_Testenv_Module_TestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var value="convert.base64-encode"/></b>: '.
-            '<var value="UEhQ"/>',
+            "PRIVMSG #test :\002convert.base64-encode\002: UEhQ",
             $this->_outputBuffer[0]
         );
 
@@ -119,8 +118,7 @@ extends Erebot_Testenv_Module_TestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var value="convert.base64-decode"/></b>: '.
-            '<var value="PHP"/>',
+            "PRIVMSG #test :\002convert.base64-decode\002: PHP",
             $this->_outputBuffer[0]
         );
     }
@@ -131,8 +129,7 @@ extends Erebot_Testenv_Module_TestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :<b><var value="string.rot13"/></b>: '.
-            '<var value="CUC"/>',
+            "PRIVMSG #test :\002string.rot13\002: CUC",
             $this->_outputBuffer[0]
         );
     }
@@ -143,9 +140,7 @@ extends Erebot_Testenv_Module_TestCase
         $this->_module->handleFilter($this->_eventHandler, $event);
         $this->assertSame(1, count($this->_outputBuffer));
         $this->assertSame(
-            'PRIVMSG #test :No such filter '.
-            '"<var value="surely.this.does.not.exist"/>" '.
-            'or filter blocked.',
+            'PRIVMSG #test :No such filter "surely.this.does.not.exist" or filter blocked.',
             $this->_outputBuffer[0]
         );
     }
