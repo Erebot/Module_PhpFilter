@@ -49,16 +49,8 @@ extends Erebot_Testenv_Module_TestCase
 
     protected function _mockMessage($text)
     {
-        $event = $this->getMock(
-            '\\Erebot\\Interfaces\\Event\\ChanText',
-            array(), array(), '', FALSE, FALSE
-        );
-
-        $wrapper = $this->getMock(
-            '\\Erebot\\Interfaces\\TextWrapper',
-            array(), array(), '', FALSE, FALSE
-        );
-
+        $event = $this->getMockBuilder('\\Erebot\\Interfaces\\Event\\ChanText')->getMock();
+        $wrapper = $this->getMockBuilder('\\Erebot\\Interfaces\\TextWrapper')->getMock();
         $text = explode(" ", $text, 3);
         $wrapper
             ->expects($this->any())
