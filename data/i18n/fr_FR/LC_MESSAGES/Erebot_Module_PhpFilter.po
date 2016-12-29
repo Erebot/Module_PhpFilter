@@ -1,51 +1,59 @@
-#
+# SOME DESCRIPTIVE TITLE.
+# This file is put in the public domain.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Erebot_Module_PhpFilter 0.5.0\n"
+"Project-Id-Version: Erebot_Module_PhpFilter 1.0.x-dev\n"
 "Report-Msgid-Bugs-To: i18n@erebot.net\n"
-"POT-Creation-Date: 2012-05-20 23:53+0200\n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"Language: fr_FR\n"
+"POT-Creation-Date: 2016-12-17 22:35+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: François Poirotte <clicky@erebot.net>, 2016\n"
+"Language-Team: French (France) (https://www.transifex.com/erebot/teams/1675/fr_FR/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-#
-# File: src/Erebot/Module/PhpFilter.php, line: 240
+"Language: fr_FR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# File: src/PhpFilter.php, line: 302
 msgid "<b><var name=\"filter\"/></b>: <var name=\"result\"/>"
 msgstr "<b><var name=\"filter\"/></b>: <var name=\"result\"/>"
-#
-# File: src/Erebot/Module/PhpFilter.php, line: 152
+
+# File: src/PhpFilter.php, line: 195
 msgid ""
-"<b>Usage:</b> !<var name=\"trigger\"/> &lt;<u>filter</u>&gt; &lt;<u>input</"
-"u>&gt;. Transforms the given &lt;<u>input</u>&gt; using the given &lt;"
-"<u>filter</u>&gt;. The following filters are available: <for from=\"filters\" "
-"item=\"filter\"><b><var name=\"filter\"/></b></for>."
+"<b>Usage:</b> !<var name=\"trigger\"/> &lt;<u>filter</u>&gt; "
+"&lt;<u>input</u>&gt;. Transforms the given &lt;<u>input</u>&gt; using the "
+"given &lt;<u>filter</u>&gt;. The following filters are available: <for "
+"from=\"filters\" item=\"filter\"><b><var name=\"filter\"/></b></for>."
 msgstr ""
-"<b>Usage :</b> !<var name=\"trigger\"/> &lt;<u>filtre</u>&gt; &lt;<u>entrée</"
-"u>&gt;. Transforme l'&lt;<u>entrée</u>&gt; en utilisant le &lt;<u>filtre</"
-"u>&gt; spécifié. Les filtres suivants sont disponibles : <for from=\"filters"
-"\" item=\"filter\"><b><var name=\"filter\"/></b></for>."
-#
+"<b>Usage :</b> !<var name=\"trigger\"/> &lt;<u>filtre</u>&gt; "
+"&lt;<u>entrée</u>&gt;. Transforme l'&lt;<u>entrée</u>&gt; en utilisant le "
+"&lt;<u>filtre</u>&gt; spécifié. Les filtres suivants sont disponibles : <for"
+" from=\"filters\" item=\"filter\"><b><var name=\"filter\"/></b></for>."
+
+# File: src/PhpFilter.php, line: 79
 msgid "Could not register Filter trigger"
 msgstr "Impossible d'enregistrer le déclencheur des Filtres"
-#
+
+# File: src/PhpFilter.php, line: 288
 msgid "No such filter \"<var name=\"filter\"/>\" or filter blocked."
 msgstr "Filtre introuvable \"<var name=\"filter\"/>\" ou filtre bloqué."
-#
-# File: src/Erebot/Module/PhpFilter.php, line: 138
+
+# File: src/PhpFilter.php, line: 181
 msgid ""
 "Provides the <b><var name=\"trigger\"/></b> command which transforms the "
 "given input using some PHP filter."
 msgstr ""
-"Fournit la commande <b><var name=\"trigger\"/></b> qui transforme une entrée "
-"en utilisant un filtre de PHP."
-#
+"Fournit la commande <b><var name=\"trigger\"/></b> qui transforme une entrée"
+" en utilisant un filtre de PHP."
+
+# File: src/PhpFilter.php, line: 238
 msgid ""
 "Usage: <b><var name=\"cmd\"/> &lt;filter&gt; &lt;text&gt;</b>. Available "
 "filters: <for from=\"filters\" item=\"filter\"><var name=\"filter\"/></for>."
 msgstr ""
 "Usage: <b><var name=\"cmd\"/> &lt;filter&gt; &lt;text&gt;</b>. Filtres "
-"disponibles : <for from=\"filters\" item=\"filter\"><var name=\"filter\"/></"
-"for>."
+"disponibles : <for from=\"filters\" item=\"filter\"><var "
+"name=\"filter\"/></for>."
