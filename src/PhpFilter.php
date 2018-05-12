@@ -81,7 +81,7 @@ class PhpFilter extends \Erebot\Module\Base implements \Erebot\Interfaces\HelpEn
             }
 
             $this->cmdHandler   = new \Erebot\EventHandler(
-                \Erebot\CallableWrapper::wrap(array($this, 'handleFilter')),
+                array($this, 'handleFilter'),
                 new \Erebot\Event\Match\All(
                     new \Erebot\Event\Match\Type(
                         '\\Erebot\\Interfaces\\Event\\Base\\TextMessage'
@@ -92,7 +92,7 @@ class PhpFilter extends \Erebot\Module\Base implements \Erebot\Interfaces\HelpEn
             $this->connection->addEventHandler($this->cmdHandler);
 
             $this->usageHandler  = new \Erebot\EventHandler(
-                \Erebot\CallableWrapper::wrap(array($this, 'handleUsage')),
+                array($this, 'handleUsage'),
                 new \Erebot\Event\Match\All(
                     new \Erebot\Event\Match\Type(
                         '\\Erebot\\Interfaces\\Event\\Base\\TextMessage'
